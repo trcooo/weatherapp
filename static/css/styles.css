@@ -45,7 +45,7 @@ body{
   margin-bottom:18px;
 }
 
-.brand{display:flex; gap:12px; align-items:center;}
+.brand{display:flex; gap:12px; align-items:center; text-decoration:none; color:inherit;}
 .brand__logo{
   width:44px; height:44px;
   border-radius:14px;
@@ -56,8 +56,8 @@ body{
   color:var(--blue2);
 }
 .brand__logo svg{width:26px; height:26px}
-.brand__title{font-weight:700; font-size:18px; letter-spacing:-.02em}
-.brand__subtitle{font-size:12px; color:var(--muted)}
+.brand__title,.brand__name{font-weight:700; font-size:18px; letter-spacing:-.02em}
+.brand__subtitle,.brand__tag{font-size:12px; color:var(--muted)}
 
 .search{
   display:flex;
@@ -285,13 +285,13 @@ body{
   margin-left:auto;
 }
 .account__link{
-  color: var(--text-muted);
+  color: var(--muted);
   text-decoration:none;
   font-weight:600;
   padding:10px 12px;
   border-radius:999px;
 }
-.account__link:hover{ background: rgba(255,255,255,.6); color: var(--text); }
+.account__link:hover{ background: rgba(255,255,255,.6); color: var(--ink); }
 
 .account__btn{
   display:inline-flex;
@@ -302,7 +302,7 @@ body{
   border: 1px solid rgba(15, 23, 42, .10);
   background: rgba(255,255,255,.55);
   text-decoration:none;
-  color: var(--text);
+  color: var(--ink);
   font-weight:700;
   box-shadow: 0 10px 30px rgba(2, 132, 199, .10);
   backdrop-filter: blur(10px);

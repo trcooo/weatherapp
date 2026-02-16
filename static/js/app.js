@@ -100,7 +100,9 @@
   };
 
   const setLoading = (loading) => {
+    if (!els.form) return;
     const btn = els.form.querySelector("button[type=submit]");
+    if (!btn) return;
     btn.disabled = loading;
     btn.textContent = loading ? "Загрузка…" : "Показать";
   };
@@ -236,24 +238,26 @@
     document.querySelectorAll(".pill[data-city]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const c = btn.getAttribute("data-city") || "";
-        els.input.value = c;
+        if (els.input) els.input.value = c;
         fetchWeather(c);
       });
     });
   }
 
   async function init() {
-    els.year.textContent = String(new Date().getFullYear());
+    if (els.year) els.year.textContent = String(new Date().getFullYear());
     bindPills();
 
     const cfg = await loadConfig();
     const defaultCity = (serverPrefs && serverPrefs.default_city) || cfg?.default_city || "Москва";
 
-    els.form.addEventListener("submit", (ev) => {
-      ev.preventDefault();
-      const city = (els.input.value || "").trim();
-      fetchWeather(city || defaultCity);
-    });
+    if (els.form) {
+      els.form.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        const city = ((els.input && els.input.value) || "").trim();
+        fetchWeather(city || defaultCity);
+      });
+    }
 
     // initial load
     if (els.input && !els.input.value) els.input.value = defaultCity;
