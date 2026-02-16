@@ -1,0 +1,9 @@
+{
+  "default_city": "Москва",
+  "units": "metric",
+  "lang": "ru",
+  "theme": {
+    "primary": "#3ba7ff",
+    "background": "#eaf6ff"
+  }
+}
