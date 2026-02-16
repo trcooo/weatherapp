@@ -83,6 +83,9 @@
         <div class="forecast" id="forecast">
           <div class="forecast__empty" id="forecastEmpty">Введите город, чтобы увидеть прогноз</div>
         </div>
+
+        <!-- Fills the (sometimes) empty space under the hourly cards on wide screens -->
+        <div class="insights" id="forecastInsights" aria-live="polite"></div>
       </section>
 
       <section class="card advice" aria-label="Рекомендации">
@@ -132,7 +135,8 @@
         
         </div>
 
-        <div class="tips__rec" id="tipsAdvice" aria-live="polite"></div>
+        <!-- Extra panels: different from "одежда" so it doesn't repeat -->
+        <div class="insights" id="tipsInsights" aria-live="polite"></div>
         <p class="muted">
           Данные: OpenWeather. Время восхода/заката отображается в UTC (как приходит из API).
         </p>

@@ -45,14 +45,16 @@
   font-size:12px;
 }
 
-.tips__rec{
-  margin-top:12px;
-  padding-top:12px;
-  border-top:1px dashed rgba(30,80,130,.18);
-  display:grid;
-  gap:10px;
-}
-.tips__rec .advice__item{padding:10px 10px; border-radius:16px;}
+/* --- Insights (fills empty space under forecast & quick tips without duplicating clothing advice) --- */
+.insights{ margin-top:12px; display:grid; gap:10px; }
+.insights__grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
+.insight{ padding:12px 12px; border-radius:18px; background:rgba(255,255,255,.55); border:1px solid var(--stroke); }
+.insight__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.insight__title{ font-weight:850; margin:0; font-size:14px; }
+.insight__icon{ width:34px; height:34px; border-radius:12px; display:grid; place-items:center; background:rgba(59,167,255,.14); border:1px solid rgba(59,167,255,.18); font-size:18px; }
+.insight__desc{ margin:8px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
+.insight__meta{ margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; }
+.mini-chip{ display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; border:1px solid rgba(59,167,255,.22); background:rgba(255,255,255,.65); color:#1f6bb0; font-weight:800; font-size:12px; }
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -76,7 +78,8 @@ body{
 .blob--b{right:-220px; top:80px; background:radial-gradient(circle at 30% 30%, #4aa8ff, transparent 60%)}
 .blob--c{left:20%; bottom:-260px; background:radial-gradient(circle at 30% 30%, #b6e6ff, transparent 60%)}
 
-.app{max-width:1320px; margin:0 auto; padding:clamp(16px,3vw,24px) clamp(12px,3vw,18px) 56px;}
+/* Align the whole app to the left (remove big empty left area on wide screens) */
+.app{max-width:1320px; margin:0; padding:clamp(16px,3vw,24px) clamp(12px,3vw,18px) 56px;}
 
 .topbar{
   display:flex;
@@ -557,9 +560,9 @@ body{
 .tips__sep{ width:1px; height:28px; background: rgba(15,23,42,.10); border-radius:99px; margin: 0 4px; }
 
 
-/* === Layout tuning (desktop: shift content slightly left) === */
+/* === Layout tuning (desktop: keep left aligned) === */
 @media (min-width: 1100px){
-  .app{ margin: 0 auto; }
+  .app{ margin: 0; }
 }
 
 /* === Mobile hero: align meta left & make stat boxes bigger === */

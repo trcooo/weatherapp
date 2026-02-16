@@ -26,7 +26,8 @@
     adviceBadge: $("adviceBadge"),
     adviceList: $("adviceList"),
     adviceChips: $("adviceChips"),
-    tipsAdvice: $("tipsAdvice"),
+    forecastInsights: $("forecastInsights"),
+    tipsInsights: $("tipsInsights"),
   };
 
 
@@ -251,22 +252,144 @@
       }
     }
 
-    // Inline recommendations inside Quick Tips
-    if (els.tipsAdvice) {
-      if (!advice.items.length) {
-        els.tipsAdvice.innerHTML = "";
-      } else {
-        els.tipsAdvice.innerHTML = `<div class="kicker">Рекомендации</div>` + advice.items.slice(0, 2).map((x) => (
-          `<div class="advice__item">
-            <div class="advice__icon">${x.icon}</div>
-            <div class="advice__text">
-              <p class="advice__title">${x.title}</p>
-              <p class="advice__desc">${x.desc}</p>
-            </div>
-          </div>`
-        )).join("");
-      }
+  };
+
+  const computeInsights = (cur, forecast, units) => {
+    const sym = unitSymbols(units);
+    const t = Number(cur?.temp);
+    const feels = Number(cur?.feels_like ?? cur?.temp);
+    const wind = Number(cur?.wind_speed);
+    const humidity = Number(cur?.humidity);
+    const clouds = Number(cur?.clouds);
+    const desc = String(cur?.desc || "").toLowerCase();
+
+    const next = Array.isArray(forecast) ? forecast.slice(0, 8) : []; // ~24h
+    let maxPop = 0;
+    let hasRainSnow = false;
+    for (const it of next) {
+      if (typeof it?.pop === "number") maxPop = Math.max(maxPop, it.pop);
+      const d = String(it?.desc || "").toLowerCase();
+      if (d.includes("дожд") || d.includes("лив") || d.includes("снег") || d.includes("метел")) hasRainSnow = true;
     }
+
+    // Best slot for a walk (temp high, pop low, wind moderate)
+    let best = null;
+    for (const it of next) {
+      const tt = Number(it?.temp);
+      const pp = typeof it?.pop === "number" ? it.pop : 0;
+      const ww = Number(it?.wind_speed);
+      if (!Number.isFinite(tt)) continue;
+      const windPenalty = Number.isFinite(ww) ? Math.max(0, ww - (units === "imperial" ? 18 : 7)) * 0.9 : 0;
+      const score = tt - (pp * 14) - windPenalty;
+      if (!best || score > best.score) best = { it, score, tt, pp, ww };
+    }
+
+    const formatTime = (unix) => {
+      if (!unix) return "—";
+      const d = new Date(unix * 1000);
+      return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "UTC", hour12: false }).format(d) + " UTC";
+    };
+
+    const forecastCards = [];
+    if (best && best.it?.dt) {
+      const when = formatTime(best.it.dt);
+      const tStr = `${Math.round(best.tt)}${sym.t}`;
+      const popStr = `${Math.round((best.pp || 0) * 100)}%`;
+      const windStr = Number.isFinite(best.ww) ? `${best.ww} ${sym.wind}` : "—";
+      forecastCards.push({
+        icon: "🚶",
+        title: "Лучшее время выйти",
+        desc: `Окно на ближайшие часы: ${when}. Ожидается около ${tStr} (осадки ${popStr}).`,
+        chips: ["💨 " + windStr, "☔ " + popStr],
+      });
+    }
+
+    if (next.length) {
+      const popStr = `${Math.round(maxPop * 100)}%`;
+      const kind = (desc.includes("снег") || desc.includes("метел") || hasRainSnow && next.some(x => String(x?.desc||"").toLowerCase().includes("снег"))) ? "снег" : (desc.includes("дожд") || desc.includes("лив") ? "дождь" : "осадки");
+      forecastCards.push({
+        icon: maxPop >= 0.4 ? "☔" : "🌤️",
+        title: "Осадки",
+        desc: maxPop >= 0.4 ? `В ближайшие 24 часа возможны ${kind}. Вероятность до ${popStr}.` : `Существенных осадков не ожидается (до ${popStr}).`,
+        chips: ["☁ " + (Number.isFinite(clouds) ? `${clouds}%` : "—")],
+      });
+    }
+
+    const tipsCards = [];
+    // Comfort
+    if (Number.isFinite(feels)) {
+      let level = "Комфортно";
+      let icon = "🙂";
+      if (feels <= -15) { level = "Очень холодно"; icon = "🥶"; }
+      else if (feels <= -5) { level = "Холодно"; icon = "🧣"; }
+      else if (feels <= 5) { level = "Прохладно"; icon = "🧥"; }
+      else if (feels >= 30) { level = "Жарко"; icon = "🥵"; }
+      tipsCards.push({
+        icon,
+        title: "Комфорт",
+        desc: `${level}. Ощущается как ${Math.round(feels)}${sym.t}.`,
+        chips: [Number.isFinite(humidity) ? `💧 ${humidity}%` : null, Number.isFinite(wind) ? `💨 ${wind} ${sym.wind}` : null].filter(Boolean),
+      });
+    }
+
+    // Road / safety
+    const nearZero = Number.isFinite(t) && t >= -1 && t <= 2;
+    const windy = Number.isFinite(wind) ? ((units === "imperial") ? wind >= 20 : wind >= 8) : false;
+    if (nearZero && (maxPop >= 0.3 || hasRainSnow || desc.includes("дожд") || desc.includes("снег"))) {
+      tipsCards.push({
+        icon: "🧊",
+        title: "Осторожно на улице",
+        desc: "Температура около нуля и возможны осадки — вероятность гололёда. Выбирайте обувь с хорошей подошвой.",
+        chips: ["⚠️ Гололёд"],
+      });
+    } else if (windy) {
+      tipsCards.push({
+        icon: "💨",
+        title: "Порывы ветра",
+        desc: "Ветрено: на открытых местах может быть ощутимо холоднее. Капюшон/ветровка помогут.",
+        chips: [Number.isFinite(wind) ? `💨 ${wind} ${sym.wind}` : null].filter(Boolean),
+      });
+    } else {
+      tipsCards.push({
+        icon: "✅",
+        title: "План на день",
+        desc: maxPop >= 0.4 ? "Лучше иметь запасной вариант (зонт/капюшон)." : "Можно планировать прогулку/дела без сюрпризов.",
+        chips: [maxPop >= 0.4 ? "☔ Зонт" : "🌤️ Ок"],
+      });
+    }
+
+    return { forecastCards: forecastCards.slice(0, 2), tipsCards: tipsCards.slice(0, 3) };
+  };
+
+  const renderInsights = (data) => {
+    const cur = data.current || {};
+    const insights = computeInsights(cur, data.forecast || [], data.units);
+
+    const renderBlock = (el, kicker, cards) => {
+      if (!el) return;
+      if (!cards || !cards.length) {
+        el.innerHTML = "";
+        return;
+      }
+      el.innerHTML = `
+        <div class="kicker">${kicker}</div>
+        <div class="insights__grid">
+          ${cards.map((c) => `
+            <div class="insight">
+              <div class="insight__top">
+                <p class="insight__title">${c.title}</p>
+                <div class="insight__icon">${c.icon}</div>
+              </div>
+              <p class="insight__desc">${c.desc}</p>
+              ${c.chips && c.chips.length ? `<div class="insight__meta">${c.chips.map((x) => `<span class="mini-chip">${x}</span>`).join("")}</div>` : ""}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    };
+
+    renderBlock(els.forecastInsights, "Инсайты", insights.forecastCards);
+    renderBlock(els.tipsInsights, "Сегодня", insights.tipsCards);
   };
 
   const render = (data) => {
@@ -328,6 +451,7 @@
       els.forecast.appendChild(els.forecastEmpty);
       els.forecastEmpty.hidden = false;
       renderAdvice(data);
+      renderInsights(data);
       return;
     }
     els.forecastEmpty.hidden = true;
@@ -359,6 +483,8 @@
 
     // Recommendations (fills the empty space under forecast on desktop)
     renderAdvice(data);
+    // Non-clothing insights (fills empty areas under forecast & quick tips)
+    renderInsights(data);
   };
 
   async function loadConfig() {
