@@ -12,6 +12,48 @@
   --radius: 22px;
 }
 
+/* --- Recommendations (desktop & mobile) --- */
+.advice__list{display:grid; gap:10px; margin-top:6px;}
+.advice__item{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px 12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.55);
+  border:1px solid var(--stroke);
+}
+.advice__icon{
+  width:34px; height:34px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  background:rgba(59,167,255,.14);
+  border:1px solid rgba(59,167,255,.18);
+  font-size:18px;
+}
+.advice__text{flex:1;}
+.advice__title{font-weight:850; margin:0; font-size:14px;}
+.advice__desc{margin:4px 0 0; color:var(--muted); font-size:13px; line-height:1.35;}
+.advice__chips{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;}
+.advice-chip{
+  border:1px solid rgba(59,167,255,.22);
+  background:rgba(255,255,255,.65);
+  color:#1f6bb0;
+  padding:9px 12px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+}
+
+.tips__rec{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px dashed rgba(30,80,130,.18);
+  display:grid;
+  gap:10px;
+}
+.tips__rec .advice__item{padding:10px 10px; border-radius:16px;}
+
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -34,7 +76,7 @@ body{
 .blob--b{right:-220px; top:80px; background:radial-gradient(circle at 30% 30%, #4aa8ff, transparent 60%)}
 .blob--c{left:20%; bottom:-260px; background:radial-gradient(circle at 30% 30%, #b6e6ff, transparent 60%)}
 
-.app{max-width:1120px; margin:0 auto; padding:clamp(16px,3vw,24px) clamp(12px,3vw,16px) 48px;}
+.app{max-width:1320px; margin:0 auto; padding:clamp(16px,3vw,24px) clamp(12px,3vw,18px) 56px;}
 
 .topbar{
   display:flex;
@@ -100,6 +142,7 @@ body{
   display:grid;
   grid-template-columns: 1fr;
   gap:16px;
+  align-items:start;
 }
 
 .card{
@@ -266,9 +309,22 @@ body{
 }
 
 @media (min-width: 980px){
-  .grid{grid-template-columns: 1.2fr .8fr;}
-  .hero{grid-column:1}
-  .tips{grid-column:2}
+  /* Desktop layout:
+     - left column wider so "Сейчас" stat boxes look bigger
+     - fill empty area under forecast with recommendations */
+  .grid{
+    grid-template-columns: 460px 1fr;
+    grid-template-areas:
+      "hero forecast"
+      "hero advice"
+      "map tips";
+    gap:18px;
+  }
+  .hero{grid-area:hero;}
+  .forecast-card{grid-area:forecast;}
+  .advice{grid-area:advice;}
+  .map{grid-area:map;}
+  .tips{grid-area:tips;}
   .footer{grid-column:1 / span 2}
 }
 
@@ -503,10 +559,7 @@ body{
 
 /* === Layout tuning (desktop: shift content slightly left) === */
 @media (min-width: 1100px){
-  .app{
-    margin-left: clamp(16px, 3vw, 64px);
-    margin-right: auto;
-  }
+  .app{ margin: 0 auto; }
 }
 
 /* === Mobile hero: align meta left & make stat boxes bigger === */
@@ -574,8 +627,9 @@ body{
 
 /* Slightly larger stat value on desktop too */
 @media (min-width: 980px){
-  .stat{padding:14px 15px;}
-  .stat__value{font-size:18px;}
+  .stats{grid-template-columns: 1fr;}
+  .stat{padding:16px 16px;}
+  .stat__value{font-size:19px;}
 }
 
 
@@ -614,7 +668,7 @@ body{
   }
 
   .search{ width:100%; }
-  .search__field{
+  .search__input{
     width:100%;
     font-size:16px; /* prevents iOS zoom on focus */
     padding: 14px 14px 14px 44px;

@@ -23,6 +23,10 @@
     year: $("year"),
     mapLink: $("mapLink"),
     mapMeta: $("mapMeta"),
+    adviceBadge: $("adviceBadge"),
+    adviceList: $("adviceList"),
+    adviceChips: $("adviceChips"),
+    tipsAdvice: $("tipsAdvice"),
   };
 
 
@@ -141,6 +145,130 @@
     return `https://openweathermap.org/img/wn/${code}@2x.png`;
   };
 
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+  const computeAdvice = (cur, forecast, units) => {
+    const sym = unitSymbols(units);
+    const t = Number(cur?.feels_like ?? cur?.temp);
+    const wind = Number(cur?.wind_speed);
+    const desc = String(cur?.desc || "").toLowerCase();
+
+    const next = Array.isArray(forecast) ? forecast.slice(0, 4) : []; // ~12h
+    let maxPop = 0;
+    let nextDesc = "";
+    for (const it of next) {
+      if (typeof it?.pop === "number") maxPop = Math.max(maxPop, it.pop);
+      if (!nextDesc && it?.desc) nextDesc = String(it.desc).toLowerCase();
+    }
+    const wetDesc = (desc + " " + nextDesc);
+    const isRain = wetDesc.includes("дожд") || wetDesc.includes("лив");
+    const isSnow = wetDesc.includes("снег") || wetDesc.includes("метел") || wetDesc.includes("снеж");
+    const precipLikely = maxPop >= 0.4;
+
+    const items = [];
+    const chips = [];
+
+    // Clothing
+    if (Number.isFinite(t)) {
+      if (t <= -15) {
+        items.push({ icon: "🧥", title: "Очень холодно", desc: `Пуховик, шапка, шарф, перчатки. Лучше закрытая обувь.` });
+        chips.push("Пуховик", "Шапка", "Перчатки");
+      } else if (t <= -5) {
+        items.push({ icon: "🧣", title: "Холодно", desc: `Тёплая куртка, шапка и перчатки будут кстати.` });
+        chips.push("Тёплая куртка", "Шапка");
+      } else if (t <= 5) {
+        items.push({ icon: "🧤", title: "Прохладно", desc: `Куртка/пальто и закрытая обувь. Можно лёгкие перчатки.` });
+        chips.push("Куртка", "Закрытая обувь");
+      } else if (t <= 15) {
+        items.push({ icon: "🧢", title: "Комфортно", desc: `Лёгкая куртка/ветровка или толстовка.` });
+        chips.push("Ветровка");
+      } else if (t <= 25) {
+        items.push({ icon: "👕", title: "Тепло", desc: `Лёгкая одежда. На вечер можно взять тонкую кофту.` });
+        chips.push("Лёгкая одежда");
+      } else {
+        items.push({ icon: "🕶️", title: "Жарко", desc: `Лёгкая одежда, вода и головной убор.` });
+        chips.push("Вода", "Кепка");
+      }
+    }
+
+    // Wind
+    if (Number.isFinite(wind)) {
+      const windy = (units === "imperial") ? wind >= 20 : wind >= 8;
+      if (windy) {
+        items.push({ icon: "💨", title: "Ветрено", desc: `Ветер ${wind} ${sym.wind}. Лучше капюшон/ветровка.` });
+        chips.push("Капюшон");
+      }
+    }
+
+    // Precipitation
+    if (precipLikely) {
+      const kind = isSnow ? "снег" : (isRain ? "дождь" : "осадки");
+      items.push({ icon: "☔", title: "Возможны осадки", desc: `Вероятность до ${Math.round(maxPop * 100)}%. Возьмите зонт (${kind}).` });
+      chips.push("Зонт");
+    }
+
+    // Slippery / caution
+    if (Number.isFinite(t) && t >= -1 && t <= 2 && (precipLikely || isRain || isSnow)) {
+      items.push({ icon: "🧊", title: "Осторожно", desc: "Температура около нуля — возможна гололедица. Выбирайте обувь с хорошей подошвой." });
+      chips.push("Обувь с протектором");
+    }
+
+    // Badge
+    let badge = "—";
+    if (Number.isFinite(t)) badge = `${Math.round(t)}${sym.t}`;
+
+    return { badge, items: items.slice(0, 4), chips: Array.from(new Set(chips)).slice(0, 6) };
+  };
+
+  const renderAdvice = (data) => {
+    if (!els.adviceList) return;
+    const cur = data.current || {};
+    const advice = computeAdvice(cur, data.forecast || [], data.units);
+    if (els.adviceBadge) els.adviceBadge.textContent = advice.badge;
+
+    // Main recommendations card
+    if (!advice.items.length) {
+      els.adviceList.innerHTML = `<div class="forecast__empty">Нет данных для рекомендаций</div>`;
+    } else {
+      els.adviceList.innerHTML = advice.items.map((x) => (
+        `<div class="advice__item">
+          <div class="advice__icon">${x.icon}</div>
+          <div class="advice__text">
+            <p class="advice__title">${x.title}</p>
+            <p class="advice__desc">${x.desc}</p>
+          </div>
+        </div>`
+      )).join("");
+    }
+
+    if (els.adviceChips) {
+      if (!advice.chips.length) {
+        els.adviceChips.hidden = true;
+        els.adviceChips.innerHTML = "";
+      } else {
+        els.adviceChips.hidden = false;
+        els.adviceChips.innerHTML = advice.chips.map((c) => `<span class="advice-chip">${c}</span>`).join("");
+      }
+    }
+
+    // Inline recommendations inside Quick Tips
+    if (els.tipsAdvice) {
+      if (!advice.items.length) {
+        els.tipsAdvice.innerHTML = "";
+      } else {
+        els.tipsAdvice.innerHTML = `<div class="kicker">Рекомендации</div>` + advice.items.slice(0, 2).map((x) => (
+          `<div class="advice__item">
+            <div class="advice__icon">${x.icon}</div>
+            <div class="advice__text">
+              <p class="advice__title">${x.title}</p>
+              <p class="advice__desc">${x.desc}</p>
+            </div>
+          </div>`
+        )).join("");
+      }
+    }
+  };
+
   const render = (data) => {
     const loc = data.location || {};
     const cur = data.current || {};
@@ -199,6 +327,7 @@
     if (!items.length) {
       els.forecast.appendChild(els.forecastEmpty);
       els.forecastEmpty.hidden = false;
+      renderAdvice(data);
       return;
     }
     els.forecastEmpty.hidden = true;
@@ -227,6 +356,9 @@
       frag.appendChild(div);
     }
     els.forecast.appendChild(frag);
+
+    // Recommendations (fills the empty space under forecast on desktop)
+    renderAdvice(data);
   };
 
   async function loadConfig() {

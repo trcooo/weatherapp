@@ -71,7 +71,7 @@
         <div class="error" id="error" hidden></div>
       </section>
 
-      <section class="card" aria-label="Прогноз">
+      <section class="card forecast-card" aria-label="Прогноз">
         <div class="card__head">
           <div>
             <div class="kicker">Дальше</div>
@@ -83,6 +83,22 @@
         <div class="forecast" id="forecast">
           <div class="forecast__empty" id="forecastEmpty">Введите город, чтобы увидеть прогноз</div>
         </div>
+      </section>
+
+      <section class="card advice" aria-label="Рекомендации">
+        <div class="card__head">
+          <div>
+            <div class="kicker">Советы</div>
+            <h2 class="card__title">Рекомендации по одежде</h2>
+          </div>
+          <div class="chip" id="adviceBadge">—</div>
+        </div>
+
+        <div class="advice__list" id="adviceList" aria-live="polite">
+          <div class="forecast__empty">Введите город, чтобы получить рекомендации</div>
+        </div>
+
+        <div class="advice__chips" id="adviceChips" hidden></div>
       </section>
 
       <section class="card map" aria-label="Карта">
@@ -115,6 +131,8 @@
           <button class="pill" data-city="Сочи">Сочи</button>
         
         </div>
+
+        <div class="tips__rec" id="tipsAdvice" aria-live="polite"></div>
         <p class="muted">
           Данные: OpenWeather. Время восхода/заката отображается в UTC (как приходит из API).
         </p>
