@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <meta name="theme-color" content="#3BA7FF" />
 </head>
 <body>
@@ -111,6 +112,18 @@
         </div>
       </section>
 
+      <section class="card map" aria-label="Карта">
+        <div class="card__head">
+          <div>
+            <div class="kicker">Карта</div>
+            <h2 class="card__title">Местоположение</h2>
+          </div>
+          <a class="chip chip--link" id="mapLink" href="#" target="_blank" rel="noreferrer">Открыть</a>
+        </div>
+
+        <div id="map" class="map__canvas" role="application" aria-label="Карта города"></div>
+        <div class="map__meta muted" id="mapMeta">—</div>
+      </section>
       <section class="card tips" aria-label="Подсказки">
         <h2 class="card__title">Быстрые подсказки</h2>
         <div class="tips__grid">
@@ -133,6 +146,7 @@
     </section>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
   <script src="/static/js/app.js" defer></script>
 </body>
 </html>

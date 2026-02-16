@@ -166,6 +166,9 @@ body{
   font-size:12px;
 }
 
+.chip--link{ text-decoration:none; }
+.chip--link:hover{ background:rgba(59,167,255,.16); }
+
 .forecast{display:flex; gap:10px; overflow:auto; padding-bottom:6px}
 .forecast::-webkit-scrollbar{height:10px}
 .forecast::-webkit-scrollbar-thumb{background:rgba(31,107,176,.18); border-radius:999px}
@@ -185,6 +188,16 @@ body{
 .fitem__temp{font-size:22px; font-weight:800; margin-top:6px}
 .fitem__desc{color:var(--muted); font-size:12px; margin-top:4px; line-height:1.25}
 .fitem__meta{display:flex; gap:10px; margin-top:10px; color:#2a6aa1; font-size:12px; font-weight:600}
+
+
+.map__canvas{
+  height:320px;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.45);
+}
+.map__meta.muted{margin:10px 2px 0}
 
 .tips{grid-column:2 / span 1}
 .tips__grid{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
@@ -224,6 +237,10 @@ body{
 }
 .footer__link{color:#1f6bb0; text-decoration:none; font-weight:700}
 .footer__link:hover{text-decoration:underline}
+
+@media (min-width: 1200px){
+  .app{transform:translateX(-32px);}
+}
 
 @media (max-width: 980px){
   .grid{grid-template-columns:1fr}

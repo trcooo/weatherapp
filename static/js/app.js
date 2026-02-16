@@ -21,6 +21,31 @@
     forecastEmpty: $("forecastEmpty"),
     error: $("error"),
     year: $("year"),
+    mapLink: $("mapLink"),
+    mapMeta: $("mapMeta"),
+  };
+
+
+  // Map (Leaflet / OpenStreetMap)
+  let map = null;
+  let marker = null;
+  let tiles = null;
+
+  const ensureMap = () => {
+    if (map) return;
+    const el = document.getElementById("map");
+    if (!el) return;
+    if (!window.L) return;
+
+    map = L.map(el, { zoomControl: true });
+    tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    });
+    tiles.addTo(map);
+
+    // world view until we load a city
+    map.setView([20, 0], 2);
   };
 
   const fmtUTC = (unix) => {
@@ -85,6 +110,25 @@
     els.iconWrap.innerHTML = cur.icon
       ? `<img alt="" src="${iconUrl(cur.icon)}" />`
       : "";
+
+
+    // Map update
+    const lat = Number(loc.lat);
+    const lon = Number(loc.lon);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      ensureMap();
+      if (map) {
+        const label = loc.country ? `${loc.name}, ${loc.country}` : (loc.name || "");
+        if (!marker) {
+          marker = L.marker([lat, lon], { title: label }).addTo(map);
+        } else {
+          marker.setLatLng([lat, lon]);
+        }
+        map.setView([lat, lon], 9, { animate: true });
+      }
+      if (els.mapMeta) els.mapMeta.textContent = `Координаты: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+      if (els.mapLink) els.mapLink.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=10/${lat}/${lon}`;
+    }
 
     els.temp.textContent = cur.temp == null ? "—" : `${Math.round(cur.temp)}${sym.t}`;
     els.feels.textContent = cur.feels_like == null ? "—" : `Ощущается как ${Math.round(cur.feels_like)}${sym.t}`;
