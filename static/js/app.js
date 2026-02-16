@@ -26,6 +26,9 @@
   };
 
 
+
+
+  const serverPrefs = (window.__USER_PREFS__ || null);
   // Map (Leaflet / OpenStreetMap)
   let map = null;
   let marker = null;
@@ -46,6 +49,14 @@
 
     // world view until we load a city
     map.setView([20, 0], 2);
+
+    // keep Leaflet rendering correct on resize / orientation changes
+    const invalidate = () => {
+      if (!map) return;
+      try { map.invalidateSize(); } catch {}
+    };
+    window.addEventListener("resize", () => invalidate());
+    window.addEventListener("orientationchange", () => setTimeout(() => invalidate(), 200));
   };
 
   const fmtUTC = (unix) => {
@@ -202,9 +213,11 @@
     setLoading(true);
     try {
       const params = new URLSearchParams();
+      const finalUnits = (opts.units || (serverPrefs && serverPrefs.units) || "");
+      const finalLang = (opts.lang || (serverPrefs && serverPrefs.lang) || "");
       if (city) params.set("city", city);
-      if (opts.units) params.set("units", opts.units);
-      if (opts.lang) params.set("lang", opts.lang);
+      if (finalUnits) params.set("units", finalUnits);
+      if (finalLang) params.set("lang", finalLang);
 
       const r = await fetch(`/api/weather?${params.toString()}`);
       const data = await r.json();
@@ -234,7 +247,7 @@
     bindPills();
 
     const cfg = await loadConfig();
-    const defaultCity = cfg?.default_city || "Москва";
+    const defaultCity = (serverPrefs && serverPrefs.default_city) || cfg?.default_city || "Москва";
 
     els.form.addEventListener("submit", (ev) => {
       ev.preventDefault();
@@ -243,6 +256,7 @@
     });
 
     // initial load
+    if (els.input && !els.input.value) els.input.value = defaultCity;
     fetchWeather(defaultCity);
   }
 

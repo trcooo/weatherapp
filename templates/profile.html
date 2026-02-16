@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Профиль — Weather{% endblock %}
+{% block content %}
+<section class="grid grid--single">
+  <section class="card profile">
+    <div class="profile__head">
+      <div>
+        <div class="kicker">Профиль</div>
+        <h1 class="profile__title">{{ current_user.username }}</h1>
+        <div class="muted">{{ current_user.email }}</div>
+      </div>
+      <a class="btn btn--ghost" href="/">На главную</a>
+    </div>
+
+    <div class="profile__grid">
+      <div class="profile__col">
+        <h2 class="h2">Настройки</h2>
+
+        <form method="post" action="{{ url_for('profile_post') }}" class="form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" name="action" value="prefs"/>
+
+          <label class="field">
+            <span class="field__label">Город по умолчанию</span>
+            <input class="field__input" type="text" name="default_city" value="{{ current_user.default_city or '' }}" placeholder="например: Минск">
+          </label>
+
+          <div class="field">
+            <span class="field__label">Единицы</span>
+            <div class="seg">
+              <label class="seg__opt">
+                <input type="radio" name="units" value="metric" {% if current_user.units=='metric' %}checked{% endif %}>
+                <span>Metric (°C)</span>
+              </label>
+              <label class="seg__opt">
+                <input type="radio" name="units" value="imperial" {% if current_user.units=='imperial' %}checked{% endif %}>
+                <span>Imperial (°F)</span>
+              </label>
+              <label class="seg__opt">
+                <input type="radio" name="units" value="standard" {% if current_user.units=='standard' %}checked{% endif %}>
+                <span>Standard (K)</span>
+              </label>
+            </div>
+          </div>
+
+          <label class="field">
+            <span class="field__label">Язык</span>
+            <select class="field__input" name="lang">
+              <option value="ru" {% if current_user.lang=='ru' %}selected{% endif %}>ru</option>
+              <option value="en" {% if current_user.lang=='en' %}selected{% endif %}>en</option>
+              <option value="uk" {% if current_user.lang=='uk' %}selected{% endif %}>uk</option>
+              <option value="pl" {% if current_user.lang=='pl' %}selected{% endif %}>pl</option>
+              <option value="de" {% if current_user.lang=='de' %}selected{% endif %}>de</option>
+            </select>
+          </label>
+
+          <button class="btn btn--primary" type="submit">Сохранить</button>
+        </form>
+      </div>
+
+      <div class="profile__col">
+        <h2 class="h2">Избранные города</h2>
+
+        <form method="post" action="{{ url_for('profile_post') }}" class="form form--inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" name="action" value="add_fav"/>
+          <input class="field__input" type="text" name="fav_city" placeholder="Добавить город…">
+          <button class="btn btn--primary" type="submit">Добавить</button>
+        </form>
+
+        {% if current_user.favorites %}
+          <div class="fav-list">
+            {% for f in current_user.favorites %}
+              <div class="fav-item">
+                <span class="fav-item__name">{{ f.city }}</span>
+                <form method="post" action="{{ url_for('profile_post') }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <input type="hidden" name="action" value="del_fav"/>
+                  <input type="hidden" name="fav_id" value="{{ f.id }}"/>
+                  <button class="btn btn--ghost btn--small" type="submit">Удалить</button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted">Пока пусто. Добавьте пару городов, и они появятся как быстрые подсказки на главной.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</section>
+{% endblock %}

@@ -1,51 +1,15 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Weather — Modern</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <meta name="theme-color" content="#3BA7FF" />
-</head>
-<body>
-  <div class="bg">
-    <div class="blob blob--a"></div>
-    <div class="blob blob--b"></div>
-    <div class="blob blob--c"></div>
-  </div>
+{% extends "base.html" %}
+{% block title %}Weather — Modern{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
 
-  <main class="app" aria-live="polite">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand__logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7 15.5C4.79086 15.5 3 13.7091 3 11.5C3 9.79086 4.07669 8.33663 5.58999 7.78024C6.06336 5.46673 8.10762 3.75 10.5625 3.75C13.2706 3.75 15.4805 5.83661 15.6758 8.49444C17.9758 8.81928 19.75 10.794 19.75 13.1875C19.75 15.8073 17.6198 17.9375 15 17.9375H7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M13.5 13.25C13.5 11.5931 14.8431 10.25 16.5 10.25C18.1569 10.25 19.5 11.5931 19.5 13.25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <div class="brand__title">Weather</div>
-          <div class="brand__subtitle">современный прогноз</div>
-        </div>
-      </div>
+{% block topbar_right %}
 
-      <form id="searchForm" class="search" autocomplete="off">
-        <div class="search__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <input id="cityInput" class="search__input" type="text" placeholder="Город…" aria-label="Город" />
-        <button class="search__btn" type="submit">Показать</button>
-      </form>
-    </header>
+{% endblock %}
 
-    <section class="grid">
+{% block content %}
+<section class="grid">
       <section class="card hero" id="heroCard">
         <div class="hero__head">
           <div>
@@ -127,26 +91,28 @@
       <section class="card tips" aria-label="Подсказки">
         <h2 class="card__title">Быстрые подсказки</h2>
         <div class="tips__grid">
+          
+          {% if current_user.is_authenticated and current_user.favorites %}
+            {% for f in current_user.favorites %}
+              <button class="pill" data-city="{{ f.city }}">{{ f.city }}</button>
+            {% endfor %}
+            <span class="tips__sep" aria-hidden="true"></span>
+          {% endif %}
           <button class="pill" data-city="Москва">Москва</button>
           <button class="pill" data-city="Санкт-Петербург">Санкт‑Петербург</button>
           <button class="pill" data-city="Казань">Казань</button>
           <button class="pill" data-city="Новосибирск">Новосибирск</button>
           <button class="pill" data-city="Екатеринбург">Екатеринбург</button>
           <button class="pill" data-city="Сочи">Сочи</button>
+        
         </div>
         <p class="muted">
           Данные: OpenWeather. Время восхода/заката отображается в UTC (как приходит из API).
         </p>
       </section>
+{% endblock %}
 
-      <footer class="footer">
-        <div>© <span id="year"></span> Weather</div>
-        <a class="footer__link" href="/api/health" target="_blank" rel="noreferrer">healthcheck</a>
-      </footer>
-    </section>
-  </main>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
-  <script src="/static/js/app.js" defer></script>
-</body>
-</html>
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="/static/js/app.js"></script>
+{% endblock %}

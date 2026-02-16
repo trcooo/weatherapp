@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Вход — Weather{% endblock %}
+{% block content %}
+<section class="auth-wrap">
+  <div class="card auth-card">
+    <div class="auth-card__head">
+      <div class="kicker">Аккаунт</div>
+      <h1 class="auth-card__title">Вход</h1>
+      <p class="muted">Войдите, чтобы сохранить избранные города и настройки.</p>
+    </div>
+
+    <form class="form" method="post" action="{{ url_for('auth.login_post') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <label class="field">
+        <span class="field__label">Email</span>
+        <input class="field__input" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+      </label>
+
+      <label class="field">
+        <span class="field__label">Пароль</span>
+        <input class="field__input" type="password" name="password" autocomplete="current-password" required placeholder="••••••••">
+      </label>
+
+      <div class="form__row">
+        <button class="btn btn--primary" type="submit">Войти</button>
+        <a class="btn btn--ghost" href="{{ url_for('auth.register') }}">Создать аккаунт</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
