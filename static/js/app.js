@@ -26,6 +26,35 @@
   };
 
 
+  // Prevent Telegram/iOS webview from scrolling the whole page when the user scrolls inside forecast block
+  const trapInnerScroll = (el) => {
+    if (!el) return;
+    let startY = 0;
+    el.addEventListener("touchstart", (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    el.addEventListener("touchmove", (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      // only if the element is scrollable
+      if (el.scrollHeight <= el.clientHeight) return;
+
+      const y = e.touches[0].clientY;
+      const dy = y - startY;
+      const atTop = el.scrollTop <= 0;
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+
+      // Stop the body from taking over when user hits the bounds
+      if ((atTop && dy > 0) || (atBottom && dy < 0)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  };
+
+  trapInnerScroll(els.forecast);
+
+
 
 
   const serverPrefs = (window.__USER_PREFS__ || null);

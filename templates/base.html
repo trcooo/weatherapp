@@ -2,12 +2,12 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>{% block title %}Weather{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/styles.css?v={{ build_id }}" />
   {% block head_extra %}{% endblock %}
   <meta name="theme-color" content="#3BA7FF" />
 </head>
@@ -62,14 +62,14 @@
     {% block content %}{% endblock %}
 
     <footer class="footer">
-      <div>© <span id="year"></span> Weather</div>
+      <div>© <span id="year"></span> Weather <span class="build">· {{ build_id }}</span></div>
     </footer>
   </main>
 
   <script>
     window.__USER_PREFS__ = {{ user_prefs|default(None)|tojson }};
   </script>
-  <script src="/static/js/app_base.js"></script>
+  <script src="/static/js/app_base.js?v={{ build_id }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

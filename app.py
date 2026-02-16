@@ -11,11 +11,15 @@ from security import generate_csrf_token, validate_csrf
 
 BASE_DIR = Path(__file__).resolve().parent
 
+BUILD_ID = os.getenv('BUILD_ID', '20260217-0012')
+
 app = Flask(
     __name__,
     static_folder=str(BASE_DIR / "static"),
     template_folder=str(BASE_DIR / "templates"),
 )
+
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # disable static caching (helps mobile/Telegram webview)
 
 # --- Security / sessions ---
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-change-me")
@@ -50,10 +54,25 @@ def load_user(user_id: str):
     except Exception:
         return None
 
+@app.context_processor
+def inject_build_id():
+    return {'build_id': BUILD_ID}
+
 # --- CSRF ---
 @app.before_request
 def _csrf_protect():
     validate_csrf()
+
+
+@app.after_request
+def _no_cache_html(resp):
+    # Telegram/Safari webviews can aggressively cache; keep HTML always fresh
+    try:
+        if resp.mimetype == 'text/html':
+            resp.headers['Cache-Control'] = 'no-store, max-age=0'
+    except Exception:
+        pass
+    return resp
 
 @app.context_processor
 def inject_globals():
@@ -142,7 +161,7 @@ def profile_post():
 
 @app.get("/api/health")
 def health():
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, 'build_id': BUILD_ID})
 
 
 @app.get("/api/me")
