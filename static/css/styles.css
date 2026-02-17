@@ -47,12 +47,12 @@
 
 /* --- Insights (fills empty space under forecast & quick tips without duplicating clothing advice) --- */
 .insights{ margin-top:12px; display:grid; gap:10px; }
-.insights__grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
-.insight{ padding:12px 12px; border-radius:18px; background:rgba(255,255,255,.55); border:1px solid var(--stroke); }
+.insights__grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; min-width:0; }
+.insight{ padding:12px 12px; border-radius:18px; background:rgba(255,255,255,.55); border:1px solid var(--stroke); min-width:0; }
 .insight__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .insight__title{ font-weight:850; margin:0; font-size:14px; }
 .insight__icon{ width:34px; height:34px; border-radius:12px; display:grid; place-items:center; background:rgba(59,167,255,.14); border:1px solid rgba(59,167,255,.18); font-size:18px; }
-.insight__desc{ margin:8px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
+.insight__desc{ margin:8px 0 0; color:var(--muted); font-size:13px; line-height:1.35; overflow-wrap:anywhere; }
 .insight__meta{ margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; }
 .mini-chip{ display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; border:1px solid rgba(59,167,255,.22); background:rgba(255,255,255,.65); color:#1f6bb0; font-weight:800; font-size:12px; }
 
@@ -80,6 +80,9 @@ body{
 
 /* Align the whole app to the left (remove big empty left area on wide screens) */
 .app{max-width:1320px; margin:0; padding:clamp(16px,3vw,24px) clamp(12px,3vw,18px) 56px;}
+
+/* Some pages (e.g. profile) should be centered */
+.app.app--center{ margin-left:auto; margin-right:auto; }
 
 .topbar{
   display:flex;
@@ -148,6 +151,9 @@ body{
   align-items:start;
 }
 
+/* Prevent grid items with internal scroll/flex content from forcing horizontal overflow */
+.grid > *{ min-width:0; }
+
 .card{
   background:var(--card);
   border:1px solid var(--stroke);
@@ -156,6 +162,7 @@ body{
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   padding:18px;
+  min-width:0;
 }
 
 
@@ -219,6 +226,7 @@ body{
 .forecast{
   display:flex;
   gap:10px;
+  min-width:0;
   overflow-x:auto;
   overflow-y:hidden;
   padding:10px;
@@ -316,7 +324,7 @@ body{
      - left column wider so "Сейчас" stat boxes look bigger
      - fill empty area under forecast with recommendations */
   .grid{
-    grid-template-columns: 460px 1fr;
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
     grid-template-areas:
       "hero forecast"
       "hero advice"
