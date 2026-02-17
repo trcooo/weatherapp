@@ -79,7 +79,7 @@ body{
 .blob--c{left:20%; bottom:-260px; background:radial-gradient(circle at 30% 30%, #b6e6ff, transparent 60%)}
 
 /* Align the whole app to the left (remove big empty left area on wide screens) */
-.app{max-width:1320px; margin:0; padding:clamp(16px,3vw,24px) clamp(12px,3vw,18px) 56px;}
+.app{max-width:1320px; margin:0 auto; padding:clamp(16px,3vw,24px) clamp(12px,3vw,18px) 56px;}
 
 /* Some pages (e.g. profile) should be centered */
 .app.app--center{ margin-left:auto; margin-right:auto; }
