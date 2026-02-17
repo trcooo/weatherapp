@@ -11,7 +11,7 @@ from security import generate_csrf_token, validate_csrf
 
 BASE_DIR = Path(__file__).resolve().parent
 
-BUILD_ID = os.getenv('BUILD_ID', '20260217-1230')
+BUILD_ID = os.getenv('BUILD_ID', '20260217-1315')
 
 app = Flask(
     __name__,
