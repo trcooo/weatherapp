@@ -146,6 +146,180 @@
     return `https://openweathermap.org/img/wn/${code}@2x.png`;
   };
 
+  // --- iOS-like states + animated SVG icons ---
+  const wxFromIcon = (icon, desc = "") => {
+    const c = String(icon || "");
+    const base = c.slice(0, 2);
+    const night = c.endsWith("n");
+    let cond = "clear";
+    if (base === "01") cond = "clear";
+    else if (base === "02") cond = "partly";
+    else if (base === "03" || base === "04") cond = "cloudy";
+    else if (base === "09" || base === "10") cond = "rain";
+    else if (base === "11") cond = "thunder";
+    else if (base === "13") cond = "snow";
+    else if (base === "50") cond = "mist";
+
+    // Extra hint from text (some locales can map oddly)
+    const d = String(desc || "").toLowerCase();
+    if (d.includes("гроза")) cond = "thunder";
+    else if (d.includes("снег") || d.includes("метел")) cond = "snow";
+    else if (d.includes("дожд") || d.includes("лив")) cond = "rain";
+    else if (d.includes("туман") || d.includes("дым") || d.includes("мгла")) cond = "mist";
+
+    return { cond, night };
+  };
+
+  const applyWxTheme = (wx) => {
+    const body = document.body;
+    if (!body) return;
+    const all = [
+      "wx-clear-day", "wx-clear-night",
+      "wx-partly-day", "wx-partly-night",
+      "wx-cloudy", "wx-rain", "wx-snow", "wx-thunder", "wx-mist",
+    ];
+    all.forEach((c) => body.classList.remove(c));
+
+    const cls = (wx.cond === "clear" || wx.cond === "partly")
+      ? `wx-${wx.cond}-${wx.night ? "night" : "day"}`
+      : `wx-${wx.cond}`;
+
+    body.classList.add(cls);
+
+    // Update browser address-bar tint (nice in iOS/Android)
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      const map = {
+        "wx-clear-day": "#3BA7FF",
+        "wx-clear-night": "#2C8CFF",
+        "wx-partly-day": "#3BA7FF",
+        "wx-partly-night": "#2C8CFF",
+        "wx-cloudy": "#449BFF",
+        "wx-rain": "#2F87FF",
+        "wx-snow": "#5AB8FF",
+        "wx-thunder": "#2F7FFF",
+        "wx-mist": "#5AB8FF",
+      };
+      meta.setAttribute("content", map[cls] || "#3BA7FF");
+    }
+  };
+
+  const iosIconSVG = (icon, opts = {}) => {
+    const size = Number(opts.size || 64);
+    const animated = opts.animated !== false;
+    const small = size <= 34;
+    const wx = wxFromIcon(icon);
+    const cls = [
+      "ios-icon",
+      small ? "ios-icon--small" : "",
+      animated ? "" : "ios-icon--static",
+      opts.className || "",
+    ].filter(Boolean).join(" ");
+
+    const svgOpen = `<svg class="${cls}" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">`;
+    const svgClose = `</svg>`;
+
+    const sun = `
+      <g>
+        <g class="ios-sun__rays" stroke="var(--sun2)" stroke-width="2.6" stroke-linecap="round">
+          <line x1="32" y1="6" x2="32" y2="14" />
+          <line x1="32" y1="50" x2="32" y2="58" />
+          <line x1="6" y1="32" x2="14" y2="32" />
+          <line x1="50" y1="32" x2="58" y2="32" />
+          <line x1="12.5" y1="12.5" x2="18" y2="18" />
+          <line x1="46" y1="46" x2="51.5" y2="51.5" />
+          <line x1="12.5" y1="51.5" x2="18" y2="46" />
+          <line x1="46" y1="18" x2="51.5" y2="12.5" />
+        </g>
+        <circle cx="32" cy="32" r="11" fill="var(--sun)" />
+      </g>
+    `;
+
+    const moon = `
+      <g>
+        <path d="M42 14c-7 2-12 8-12 16 0 9 7 16 16 16 4 0 7-1 10-3-3 6-9 10-16 10-10 0-18-8-18-18 0-9 6-17 14-21 2-1 4-1 6 0z" fill="var(--moon)" opacity=".95"/>
+        <circle class="ios-star" cx="18" cy="20" r="1.4" fill="rgba(255,255,255,.95)"/>
+        <circle class="ios-star" cx="24" cy="14" r="1.0" fill="rgba(255,255,255,.9)"/>
+        <circle class="ios-star" cx="16" cy="30" r="1.1" fill="rgba(255,255,255,.85)"/>
+      </g>
+    `;
+
+    const cloud = (back = false) => `
+      <g class="ios-cloud ${back ? "ios-cloud--back" : ""}" transform="${back ? "translate(2 3)" : "translate(0 0)"}">
+        <circle cx="24" cy="36" r="9" fill="${back ? "var(--cloud2)" : "var(--cloud)"}"/>
+        <circle cx="36" cy="32" r="11" fill="${back ? "var(--cloud2)" : "var(--cloud)"}"/>
+        <circle cx="46" cy="38" r="8" fill="${back ? "var(--cloud2)" : "var(--cloud)"}"/>
+        <rect x="18" y="36" width="36" height="14" rx="7" fill="${back ? "var(--cloud2)" : "var(--cloud)"}"/>
+      </g>
+    `;
+
+    const rain = `
+      <g stroke="var(--rain)" stroke-width="2.8" stroke-linecap="round" opacity=".95">
+        <line class="ios-drop" x1="26" y1="48" x2="23" y2="56" />
+        <line class="ios-drop" x1="36" y1="48" x2="33" y2="56" />
+        <line class="ios-drop" x1="46" y1="48" x2="43" y2="56" />
+      </g>
+    `;
+
+    const snow = `
+      <g stroke="var(--snow)" stroke-width="2.4" stroke-linecap="round" opacity=".95">
+        <g class="ios-snow" transform="translate(0 0)">
+          <line x1="26" y1="50" x2="26" y2="56" />
+          <line x1="23" y1="53" x2="29" y2="53" />
+          <line x1="24" y1="52" x2="28" y2="54" />
+          <line x1="28" y1="52" x2="24" y2="54" />
+        </g>
+        <g class="ios-snow" transform="translate(10 0)">
+          <line x1="26" y1="50" x2="26" y2="56" />
+          <line x1="23" y1="53" x2="29" y2="53" />
+          <line x1="24" y1="52" x2="28" y2="54" />
+          <line x1="28" y1="52" x2="24" y2="54" />
+        </g>
+        <g class="ios-snow" transform="translate(20 0)">
+          <line x1="26" y1="50" x2="26" y2="56" />
+          <line x1="23" y1="53" x2="29" y2="53" />
+          <line x1="24" y1="52" x2="28" y2="54" />
+          <line x1="28" y1="52" x2="24" y2="54" />
+        </g>
+      </g>
+    `;
+
+    const bolt = `
+      <path class="ios-bolt" d="M38 44 30 58h7l-3 10 14-18h-7l3-6z" fill="var(--bolt)"/>
+    `;
+
+    const fog = `
+      <g stroke="var(--fog)" stroke-width="2.6" stroke-linecap="round" opacity=".95">
+        <line x1="16" y1="34" x2="52" y2="34" />
+        <line x1="12" y1="42" x2="48" y2="42" />
+        <line x1="18" y1="50" x2="54" y2="50" />
+      </g>
+    `;
+
+    let inner = "";
+    if (wx.cond === "clear") {
+      inner = wx.night ? moon : sun;
+    } else if (wx.cond === "partly") {
+      inner = wx.night
+        ? `<g transform="translate(-2 -2)">${moon}</g>${cloud(true)}${cloud(false)}`
+        : `<g transform="translate(-2 -2)">${sun}</g>${cloud(true)}${cloud(false)}`;
+    } else if (wx.cond === "cloudy") {
+      inner = `${cloud(true)}${cloud(false)}`;
+    } else if (wx.cond === "rain") {
+      inner = `${cloud(true)}${cloud(false)}${rain}`;
+    } else if (wx.cond === "snow") {
+      inner = `${cloud(true)}${cloud(false)}${snow}`;
+    } else if (wx.cond === "thunder") {
+      inner = `${cloud(true)}${cloud(false)}${bolt}`;
+    } else if (wx.cond === "mist") {
+      inner = `${cloud(true)}${fog}`;
+    } else {
+      inner = `${cloud(false)}`;
+    }
+
+    return `${svgOpen}${inner}${svgClose}`;
+  };
+
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
   const computeAdvice = (cur, forecast, units) => {
@@ -400,8 +574,10 @@
     els.place.textContent = loc.country ? `${loc.name}, ${loc.country}` : (loc.name || "—");
     els.desc.textContent = cur.desc || "—";
 
+    const wx = wxFromIcon(cur.icon, cur.desc);
+    applyWxTheme(wx);
     els.iconWrap.innerHTML = cur.icon
-      ? `<img alt="" src="${iconUrl(cur.icon)}" />`
+      ? iosIconSVG(cur.icon, { size: 64, animated: true })
       : "";
 
 
@@ -468,7 +644,7 @@
       div.innerHTML = `
         <div class="fitem__top">
           <div class="fitem__time">${t}</div>
-          <div class="fitem__icon">${it.icon ? `<img alt="" src="${iconUrl(it.icon)}" />` : ""}</div>
+          <div class="fitem__icon">${it.icon ? iosIconSVG(it.icon, { size: 30, animated: false }) : ""}</div>
         </div>
         <div class="fitem__temp">${temp}</div>
         <div class="fitem__desc">${it.desc || ""}</div>
